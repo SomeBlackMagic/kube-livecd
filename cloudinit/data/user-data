@@ -1,0 +1,31 @@
+#cloud-config
+# Allow root, do not inject "protective" forced-command options
+disable_root: false
+ssh_pwauth: false
+
+users:
+  - name: root
+    gecos: Root
+    lock_passwd: true
+    shell: /bin/bash
+    ssh_authorized_keys:
+      # Put your real key here, without any ssh options prefix
+      - ssh-ed25519 AAAAC3...... root@kali
+
+# Early removal in case the image already shipped a restricted root key
+bootcmd:
+  # Use plain scalar command; cloud-init runs it via /bin/sh -c
+  - sed -i '/Please login as the user "debian" rather than the user "root"/d' /root/.ssh/authorized_keys || true
+
+# Ensure SSH allows root with pubkey
+write_files:
+  - path: /etc/ssh/sshd_config.d/99-root-login.conf
+    permissions: "0644"
+    owner: root:root
+    content: |
+      PermitRootLogin yes
+      PubkeyAuthentication yes
+
+runcmd:
+  - test -f /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
+  - systemctl restart ssh || systemctl restart sshd

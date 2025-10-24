@@ -1,0 +1,3 @@
+# NoCloud instance identity
+instance-id: iid-k8s-livecd-001
+local-hostname: k8s-live

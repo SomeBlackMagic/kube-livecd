@@ -1,0 +1,32 @@
+version = 3
+
+[plugins.'io.containerd.cri.v1.images']
+  snapshotter = "overlayfs"
+  sandbox_image = "registry.k8s.io/pause:3.10"
+
+  [plugins.'io.containerd.cri.v1.images'.pinned_images]
+    sandbox = "registry.k8s.io/pause:3.10"
+
+[plugins.'io.containerd.cri.v1.runtime']
+  enable_selinux = false
+  disable_apparmor = true
+  tolerate_missing_hugetlb_controller = true
+  disable_hugetlb_controller = true
+  enable_unprivileged_ports = false
+  enable_unprivileged_icmp = false
+
+  [plugins.'io.containerd.cri.v1.runtime'.containerd]
+    default_runtime_name = "runc"
+
+    [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
+      runtime_type = "io.containerd.runc.v2"
+
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+        SystemdCgroup = false
+
+  [plugins.'io.containerd.cri.v1.runtime'.cni]
+    bin_dirs = ["/opt/cni/bin"]
+    conf_dir = "/etc/cni/net.d"
+
+[plugins.'io.containerd.nri.v1.nri']
+  disable = true

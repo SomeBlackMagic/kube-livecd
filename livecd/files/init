@@ -1,0 +1,44 @@
+#!/bin/busybox sh
+set -eu
+export PATH=/bin:/sbin
+/bin/mount -t proc     proc     /proc
+/bin/mount -t sysfs    sysfs    /sys
+/bin/mount -t devtmpfs devtmpfs /dev
+
+# 1) lower: find ISO and mount squashfs
+for d in /dev/sr0 /dev/cdrom /dev/sda /dev/vda; do /bin/mount -o ro "$d" /mnt 2>/dev/null && break; done
+[ -f /mnt/live/filesystem.squashfs ] || { echo "filesystem.squashfs not found"; exec /bin/sh; }
+/bin/mount -t squashfs -o loop,ro /mnt/live/filesystem.squashfs /lower || exec /bin/sh
+
+# 2) select/prepare device for upper layer
+pick_dev() {
+  [ -e /dev/disk/by-label/VAR ] && { readlink -f /dev/disk/by-label/VAR; return; }
+  for x in $(/bin/lsblk -ndo PATH,TYPE | awk '$2=="part"{print $1}'); do /bin/findmnt -S "$x" >/dev/null 2>&1 || echo "$x"; done
+  for x in $(/bin/lsblk -ndpo NAME,TYPE | awk '$2=="disk"{print $1}'); do /bin/findmnt -S "$x" >/dev/null 2>&1 || echo "$x"; done
+}
+vardev=""
+for x in $(pick_dev); do
+  case "$x" in /dev/sr*|/dev/loop*) continue;; esac
+  ro=$(/bin/lsblk -ndo RO "$x" 2>/dev/null || echo 0); [ "$ro" = "1" ] && continue
+  fstype=$(/bin/blkid -o value -s TYPE "$x" 2>/dev/null || true)
+  if [ -z "$fstype" ]; then /bin/mkfs.ext4 -F -L VAR "$x"; vardev="$x"; break; fi
+  if [ "$fstype" = "ext4" ]; then /bin/tune2fs -L VAR "$x" >/dev/null 2>&1 || true; vardev="$x"; break; fi
+done
+[ -n "$vardev" ] || { echo "No RW device for overlay"; exec /bin/sh; }
+
+# 3) mount RW-disk and create /upper and /work in its root
+/bin/mount -t ext4 "$vardev" /mnt
+/bin/mkdir -p /mnt/upper
+/bin/mkdir -p /mnt/work
+
+# 4) mount overlay on /newroot
+/bin/mount -t overlay overlay -o lowerdir=/lower,upperdir=/mnt/upper,workdir=/mnt/work /newroot || { echo "overlay mount failed"; exec /bin/sh; }
+
+# 5) move mount points and start systemd
+/bin/mkdir -p /newroot/proc /newroot/sys /newroot/dev /newroot/run /newroot/mnt
+mount --move /proc /newroot/proc
+mount --move /sys  /newroot/sys
+mount --move /dev  /newroot/dev
+mount --move /run  /newroot/run 2>/dev/null || true
+mount --move /mnt  /newroot/mnt
+exec /bin/switch_root /newroot /sbin/init

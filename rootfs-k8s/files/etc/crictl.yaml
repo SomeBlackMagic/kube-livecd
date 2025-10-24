@@ -1,0 +1,9 @@
+# Configuration for crictl
+# This file is used to configure the crictl command-line tool
+# for interacting with containerd.
+# For more information, see https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md
+
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 10
+debug: false

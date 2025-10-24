@@ -1,0 +1,10 @@
+server = "https://registry.k8s.io"
+
+[host."https://us-docker.pkg.dev/k8s-artifacts-prod/images"]
+capabilities = ["pull", "resolve"]
+
+[host."https://europe-docker.pkg.dev/k8s-artifacts-prod/images"]
+capabilities = ["pull", "resolve"]
+
+[host."https://asia-docker.pkg.dev/k8s-artifacts-prod/images"]
+capabilities = ["pull", "resolve"]
