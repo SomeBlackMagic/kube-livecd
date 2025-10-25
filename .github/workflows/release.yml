@@ -6,7 +6,34 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  build-base:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build base OS
+        run: bash build-base-os.sh
+
+      - name: Upload kernel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-artifacts
+          path: kernel/out/
+          retention-days: 1
+
+      - name: Upload rootfs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rootfs-artifacts
+          path: rootfs/out/
+          retention-days: 1
+
+  build-k8s:
+    needs: build-base
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -18,6 +45,18 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Download kernel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel-artifacts
+          path: kernel/out/
+
+      - name: Download rootfs artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rootfs-artifacts
+          path: rootfs/out/
 
       - name: Get latest patch version for k8s ${{ matrix.k8s_version }}
         id: k8s_version
@@ -38,7 +77,7 @@ jobs:
 
       - name: Build with Kubernetes ${{ steps.k8s_version.outputs.version }}
         run: |
-          bash build.sh ${{ steps.k8s_version.outputs.version }}
+          bash build-k8s.sh ${{ steps.k8s_version.outputs.version }}
 
       - name: Rename artifact
         run: |
@@ -52,7 +91,7 @@ jobs:
           retention-days: 1
 
   release:
-    needs: build
+    needs: build-k8s
     runs-on: ubuntu-latest
     permissions:
       contents: write
