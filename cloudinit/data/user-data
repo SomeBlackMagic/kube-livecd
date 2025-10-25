@@ -6,7 +6,7 @@ ssh_pwauth: false
 users:
   - name: root
     gecos: Root
-    lock_passwd: true
+    lock_passwd: false
     shell: /bin/bash
     ssh_authorized_keys:
       # Put your real key here, without any ssh options prefix
@@ -29,3 +29,4 @@ write_files:
 runcmd:
   - test -f /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
   - systemctl restart ssh || systemctl restart sshd
+  - kubeadm config images pull

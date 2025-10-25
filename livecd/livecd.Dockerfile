@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # inputs
 COPY kernel/out/vmlinuz /build/in/vmlinuz
 COPY rootfs-k8s/out/rootfs-k8s.tar.gz /build/in/rootfs.tar.gz
-COPY livecd/files/init /build/in/init
+COPY livecd/files/init.sh /build/in/init
 COPY livecd/files/grub.cfg /build/in/grub.cfg
 COPY livecd/files/copybin.sh /build/in/copybin.sh
 
