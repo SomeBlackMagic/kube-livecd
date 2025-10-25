@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  build-base:
+  build-kernel:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -15,8 +15,8 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build base OS
-        run: bash build-base-os.sh
+      - name: Build kernel
+        run: make build-kernel
 
       - name: Upload kernel artifacts
         uses: actions/upload-artifact@v4
@@ -24,6 +24,18 @@ jobs:
           name: kernel-artifacts
           path: kernel/out/
           retention-days: 1
+
+  build-rootfs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build rootfs
+        run: make build-rootfs
 
       - name: Upload rootfs artifacts
         uses: actions/upload-artifact@v4
@@ -33,11 +45,13 @@ jobs:
           retention-days: 1
 
   build-k8s:
-    needs: build-base
+    needs:
+      - build-kernel
+      - build-rootfs
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        k8s_version: ['1.24', '1.25', '1.26', '1.27', '1.28', '1.29', '1.30', '1.31', '1.32', '1.33']
+        k8s_version: ['1.28', '1.29', '1.30', '1.31', '1.32', '1.33']
 
     steps:
       - name: Checkout code
@@ -77,7 +91,8 @@ jobs:
 
       - name: Build with Kubernetes ${{ steps.k8s_version.outputs.version }}
         run: |
-          bash build-k8s.sh ${{ steps.k8s_version.outputs.version }}
+          make build-k8s K8S_VERSION=${{ steps.k8s_version.outputs.version }}
+
 
       - name: Rename artifact
         run: |
@@ -108,8 +123,10 @@ jobs:
           find artifacts -name "*.iso" -exec cp {} release/ \;
           ls -lh release/
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release/*.iso
-          generate_release_notes: true
+      - name: Upload assets to existing release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null
+          gh release upload "$TAG_NAME" release/*.iso --repo "$GITHUB_REPOSITORY" --clobber
