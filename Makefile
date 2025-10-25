@@ -1,4 +1,4 @@
-K8S_VERSION ?= v1.32.0
+K8S_VERSION ?= v1.32.1
 
 build-kernel:
 	docker build -f kernel/vanilla.Dockerfile \

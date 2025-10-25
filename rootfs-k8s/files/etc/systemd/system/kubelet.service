@@ -6,7 +6,7 @@ Wants=containerd.service network-online.target time-sync.target
 
 [Service]
 EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
-EnvironmentFile=-/etc/kubernetes/kubelet.env
+EnvironmentFile=-/etc/default/kubelet
 ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS
 Restart=always

@@ -2,6 +2,7 @@
 FROM debian:12 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash","-o","pipefail","-c"]
+ARG ISO_LABEL=K8S_NODE
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xorriso grub-pc-bin grub-efi-amd64-bin mtools \
@@ -45,12 +46,12 @@ RUN set -eux; \
   (cd /initrd && find . -mindepth 1 -printf '%P\0' | cpio --null -ov -H newc --owner 0:0 | gzip -9) > /iso/boot/initrd.img; \
   file /iso/boot/initrd.img
 
-# 4) build ISO
+# 4) build ISO with volume label
 RUN set -eux; \
   cp /build/in/vmlinuz /iso/boot/vmlinuz; \
   mkdir -p /iso/boot/grub /out; \
   cp /build/in/grub.cfg /iso/boot/grub/grub.cfg; \
-  grub-mkrescue -o /out/node.iso /iso
+  grub-mkrescue -o /out/node.iso -volid "$ISO_LABEL" /iso
 
 FROM busybox
 COPY --from=builder /out/node.iso /out/node.iso
