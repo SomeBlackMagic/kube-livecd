@@ -1,5 +1,7 @@
 set -exu pipefail
 
+K8S_VERSION=${1:-v1.32.1}
+
 #docker build \
 #  -f kernel.distro.Dockerfile \
 #  -t kimg:distro .
@@ -21,9 +23,9 @@ docker cp "$cid":/out ./rootfs/
 docker rm "$cid"
 
 docker build \
-  --build-arg KUBELET_URL=https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubelet \
-  --build-arg KUBEADM_URL=https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubeadm \
-  --build-arg KUBECTL_URL=https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubectl \
+  --build-arg KUBELET_URL=https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubelet \
+  --build-arg KUBEADM_URL=https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubeadm \
+  --build-arg KUBECTL_URL=https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubectl \
   --build-arg CONTAINERD_TGZ_URL=https://github.com/containerd/containerd/releases/download/v2.1.4/containerd-2.1.4-linux-amd64.tar.gz \
   --build-arg RUNC_URL=https://github.com/opencontainers/runc/releases/download/v1.3.2/runc.amd64 \
   --build-arg CRICTL_TGZ_URL=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.34.0/crictl-v1.34.0-linux-amd64.tar.gz \
