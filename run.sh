@@ -35,3 +35,6 @@ qemu-system-x86_64 \
   -drive if=virtio,format=qcow2,file=var.qcow2 \
   -netdev user,id=net0,hostfwd=tcp::2222-:22 \
   -device virtio-net-pci,netdev=net0
+
+#  -netdev bridge,id=net0,br=br0 \
+#  -device virtio-net-pci,netdev=net0

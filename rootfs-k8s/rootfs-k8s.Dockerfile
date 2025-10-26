@@ -124,9 +124,7 @@ COPY --chown=root:root --chmod=0644 rootfs-k8s/files/etc  /work/rootfs/etc
 RUN set -eux; \
   mkdir -p /work/rootfs/etc/systemd/system /work/rootfs/etc/containerd /work/rootfs/etc/cni/net.d /work/rootfs/etc/default; \
   mkdir -p /work/rootfs/etc/systemd/system/multi-user.target.wants; \
-  echo 'KUBELET_EXTRA_ARGS=' > /work/rootfs/etc/default/kubelet; \
   ln -sf ../containerd.service /work/rootfs/etc/systemd/system/multi-user.target.wants/containerd.service; \
-  ln -sf ../preload-k8s-images.service /work/rootfs/etc/systemd/system/multi-user.target.wants/preload-k8s-images.service; \
   ln -sf ../kubelet.service     /work/rootfs/etc/systemd/system/multi-user.target.wants/kubelet.service
 
 COPY rootfs/out/rootfs.tar.gz /in/rootfs.tar.gz

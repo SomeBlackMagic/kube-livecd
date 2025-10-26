@@ -1,0 +1,6 @@
+# Debian/Ubuntu only. Optional local overrides not managed by kubeadm.
+# Keep it empty unless you know why you need an extra flag.
+# Examples:
+# KUBELET_EXTRA_ARGS="--node-ip=192.0.2.10"
+# KUBELET_EXTRA_ARGS="--feature-gates=DevicePlugins=true"
+KUBELET_EXTRA_ARGS=""
