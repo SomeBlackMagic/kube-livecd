@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash","-o","pipefail","-c"]
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl ca-certificates xz-utils tar gzip coreutils \
+    curl ca-certificates xz-utils tar gzip coreutils qemu-utils e2fsprogs \
  && rm -rf /var/lib/apt/lists/*
 
 ARG KUBELET_URL=""
@@ -110,11 +110,6 @@ RUN set -eux; \
     mkdir -p /work/rootfs/opt/cni/bin; tar -xzf /tmp/dl/cni.tgz -C /work/rootfs/opt/cni/bin; \
     chmod 0755 /work/rootfs/opt/cni/bin/* || true; \
   }
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    qemu-utils e2fsprogs \
- && rm -rf /var/lib/apt/lists/*
-
 
 
 # systemd units and configs
