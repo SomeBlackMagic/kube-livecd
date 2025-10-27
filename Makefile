@@ -1,5 +1,7 @@
 K8S_VERSION ?= v1.32.1
 
+build: build-kernel build-rootfs build-k8s
+
 build-kernel:
 	docker build -f kernel/vanilla.Dockerfile \
 		--build-arg LINUX_TARBALL_URL=https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.4.tar.xz \
