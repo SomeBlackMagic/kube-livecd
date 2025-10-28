@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ARG SUITE=bookworm
 ARG MIRROR=http://deb.debian.org/debian
 ARG IMAGE_SIZE=2G
+ARG UTILS=procps,socat,htop,ncdu,fdisk,nano,mc,iputils-ping,tcpdump,net-tools,mtr,cloud-init
 
 RUN set -eux; \
   mkdir -p /work/rootfs /out; \
@@ -17,7 +18,7 @@ RUN set -eux; \
     --customize-hook='echo "127.0.1.1 livecd" >> "$1/etc/hosts"' \
     --variant=essential \
     --skip=check/essential \
-    --include=systemd,systemd-sysv,systemd-timesyncd,systemd-resolved,bash,coreutils,,conntrack,util-linux,tzdata,ca-certificates,curl,iproute2,ethtool,kmod,udev,iptables,nftables,procps,socat,htop,ncdu,fdisk,nano,mc,ping,tcpdump,netstat,e2fsprogs,cloud-init,openssh-server,ufw \
+    --include=systemd,systemd-sysv,systemd-timesyncd,systemd-resolved,bash,coreutils,conntrack,util-linux,tzdata,ca-certificates,curl,iproute2,ethtool,kmod,udev,iptables,nftables,${UTILS},e2fsprogs,openssh-server,ufw \
     --dpkgopt=path-exclude=/usr/share/doc/* \
     --dpkgopt=path-include=/usr/share/doc/*/copyright \
     --dpkgopt=path-exclude=/usr/share/man/* \
