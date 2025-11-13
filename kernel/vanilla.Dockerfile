@@ -9,7 +9,7 @@ ARG LINUX_TARBALL_URL
 
 RUN test -n "$LINUX_TARBALL_URL" || (echo "Set LINUX_TARBALL_URL" && exit 2)
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
     build-essential bc bison flex libssl-dev libncurses-dev \
     libelf-dev zlib1g-dev pkg-config dwarves xz-utils wget ca-certificates \
  && update-ca-certificates && rm -rf /var/lib/apt/lists/*
@@ -183,6 +183,15 @@ RUN --mount=type=cache,target=/build \
   ./scripts/config --enable CONFIG_NET_NS; \
   ./scripts/config --enable CONFIG_VETH; \
   \
+  # ============================================================
+  # incus agent
+  # ============================================================
+  ./scripts/config --enable CONFIG_VSOCKETS; \
+  ./scripts/config --enable CONFIG_VSOCKETS_DIAG; \
+  ./scripts/config --enable CONFIG_VIRTIO_VSOCKETS; \
+  ./scripts/config --enable CONFIG_VIRTIO_VSOCKETS_COMMON; \
+  ./scripts/config --enable CONFIG_VHOST_VSOCK; \
+  \
   yes "" | make olddefconfig; \
   make -j"$(nproc)"; \
   install -D arch/x86/boot/bzImage /out/vmlinuz; \
@@ -191,3 +200,8 @@ RUN --mount=type=cache,target=/build \
 
 FROM busybox
 COPY --from=build /out/ /out/
+
+
+
+
+

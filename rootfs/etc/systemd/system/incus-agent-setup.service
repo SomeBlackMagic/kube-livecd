@@ -1,0 +1,16 @@
+[Unit]
+Description=Prepare and mount Incus agent 9p shares
+DefaultDependencies=no
+Before=incus-agent.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/mkdir -p /var/lib/incus
+ExecStart=/usr/bin/mount -t 9p -o trans=virtio config /var/lib/incus
+ExecStartPost=/usr/bin/mkdir -p /run/incus_agent
+ExecStartPost=/usr/bin/mount -t 9p -o trans=virtio agent /run/incus_agent
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

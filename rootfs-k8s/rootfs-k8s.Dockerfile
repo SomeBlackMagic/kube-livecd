@@ -3,7 +3,7 @@ FROM debian:12 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash","-o","pipefail","-c"]
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
     curl ca-certificates xz-utils tar gzip coreutils qemu-utils e2fsprogs \
  && rm -rf /var/lib/apt/lists/*
 

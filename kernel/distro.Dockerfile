@@ -2,7 +2,7 @@
 ARG DEBIAN_FRONTEND=noninteractive
 FROM debian:12 AS build
 ARG DEBIAN_FRONTEND
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
     ca-certificates linux-image-amd64 rsync && \
     rm -rf /var/lib/apt/lists/*
 RUN set -eux; \

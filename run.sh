@@ -1,4 +1,8 @@
 #!/bin/bash
+
+set -exu pipefail
+
+rm var.qcow2
 if [ ! -f var.qcow2 ]; then
     qemu-img create -f qcow2 var.qcow2 2G
 fi

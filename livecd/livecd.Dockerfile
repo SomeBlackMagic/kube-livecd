@@ -4,10 +4,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash","-o","pipefail","-c"]
 ARG ISO_LABEL=K8S_NODE
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    xorriso grub-pc-bin grub-efi-amd64-bin mtools \
-    squashfs-tools busybox-static cpio file \
-    util-linux e2fsprogs ca-certificates \
+RUN apt update && apt install -y --no-install-recommends \
+    xorriso \
+    grub-pc-bin \
+    grub-efi-amd64-bin  \
+    mtools \
+    squashfs-tools  \
+    busybox-static  \
+    cpio  \
+    file \
+    util-linux  \
+    e2fsprogs  \
+    ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # inputs

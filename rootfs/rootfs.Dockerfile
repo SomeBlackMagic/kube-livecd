@@ -2,30 +2,79 @@ FROM debian:12 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash","-o","pipefail","-c"]
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    mmdebstrap ca-certificates qemu-utils e2fsprogs \
+RUN apt update && apt install -y --no-install-recommends \
+    mmdebstrap \
+    ca-certificates  \
+    qemu-utils  \
+    e2fsprogs \
+    curl \
  && rm -rf /var/lib/apt/lists/*
 
 ARG SUITE=bookworm
 ARG MIRROR=http://deb.debian.org/debian
 ARG IMAGE_SIZE=2G
-ARG UTILS=procps,socat,htop,ncdu,fdisk,nano,mc,iputils-ping,tcpdump,net-tools,mtr,cloud-init
+ARG UTILS_DEBUG=mc,procps,socat,htop,ncdu,fdisk,nano,mc,iputils-ping,tcpdump,net-tools,mtr
+#ARG UTILS_DEBUG=""
+ARG UTILS_CONFIGURE=cloud-init,ufw,openssh-server
+#ARG UTILS_CONFIGURE=""
 
-RUN set -eux; \
+
+RUN --mount=type=cache,target=/var/cache/mmdebstrap \
+  set -eux; \
+  export DEBIAN_FRONTEND=noninteractive; \
+  export TZ=Etc/UTC; \
   mkdir -p /work/rootfs /out; \
+  pkgs=( \
+    ${UTILS_DEBUG} \
+    ${UTILS_CONFIGURE} \
+    systemd \
+    systemd-sysv \
+    systemd-resolved \
+    systemd-timesyncd \
+    udev \
+    bash \
+    coreutils \
+    util-linux \
+    iproute2 \
+    ethtool \
+    kmod \
+    conntrack \
+    iptables \
+    nftables \
+    libseccomp2 \
+    libip4tc2 \
+    libnetfilter-conntrack3 \
+    libnftnl11 \
+    libkmod2 \
+    libcap2 \
+    libuuid1 \
+    libmount1 \
+    libblkid1 \
+    liblz4-1 \
+    libzstd1 \
+    libsystemd0 \
+    e2fsprogs \
+    ca-certificates \
+    tzdata ); \
+  IFS=,; include_list="${pkgs[*]}"; unset IFS; \
   mmdebstrap \
-    --customize-hook='echo k8s-livecd > "$1/etc/hostname"' \
-    --customize-hook='echo "127.0.1.1 livecd" >> "$1/etc/hosts"' \
-    --variant=essential \
-    --skip=check/essential \
-    --include=systemd,systemd-sysv,systemd-timesyncd,systemd-resolved,bash,coreutils,conntrack,util-linux,tzdata,ca-certificates,curl,iproute2,ethtool,kmod,udev,iptables,nftables,${UTILS},e2fsprogs,openssh-server,ufw \
-    --dpkgopt=path-exclude=/usr/share/doc/* \
-    --dpkgopt=path-include=/usr/share/doc/*/copyright \
-    --dpkgopt=path-exclude=/usr/share/man/* \
-    --dpkgopt=path-exclude=/usr/share/locale/* \
-    --dpkgopt=path-exclude=/usr/share/i18n/* \
-    --dpkgopt=path-exclude=/usr/share/info/* \
-    "$SUITE" /work/rootfs "$MIRROR"
+      --aptopt='Dir::Cache::archives="/var/cache/mmdebstrap/aptcache"' \
+      --aptopt='Dir::State::lists="/var/cache/mmdebstrap/lists"' \
+      --variant=essential \
+      --skip=check/essential,check/gpg \
+      --include="${include_list}" \
+      --aptopt='APT::Install-Recommends "false";' \
+      --aptopt='APT::Install-Suggests "false";' \
+      --dpkgopt=path-exclude=/usr/share/doc/* \
+      --dpkgopt=path-exclude=/usr/share/man/* \
+      --dpkgopt=path-exclude=/usr/share/locale/* \
+      --dpkgopt=path-include=/usr/share/locale/C* \
+      --dpkgopt=path-exclude=/usr/share/info/* \
+      --dpkgopt=path-exclude=/usr/share/bash-completion/* \
+      --dpkgopt=path-exclude=/usr/share/zsh/* \
+      --customize-hook='echo k8s-livecd > "$1/etc/hostname"' \
+      --customize-hook='echo "127.0.1.1 livecd" >> "$1/etc/hosts"' \
+      "$SUITE" /work/rootfs "$MIRROR"
 
 
 # networkd DHCP
