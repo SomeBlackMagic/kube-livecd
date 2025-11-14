@@ -87,6 +87,8 @@ RUN set -eux; \
   ln -sf /lib/systemd/system/systemd-networkd.service  /work/rootfs/etc/systemd/system/multi-user.target.wants/systemd-networkd.service; \
   ln -sf /lib/systemd/system/systemd-resolved.service  /work/rootfs/etc/systemd/system/multi-user.target.wants/systemd-resolved.service; \
   ln -sf /lib/systemd/system/systemd-timesyncd.service /work/rootfs/etc/systemd/system/multi-user.target.wants/systemd-timesyncd.service; \
+  ln -sf /lib/systemd/system/incus-agent.service /work/rootfs/etc/systemd/system/multi-user.target.wants/incus-agent.service; \
+  ln -sf /lib/systemd/system/incus-agent-setup.service /work/rootfs/etc/systemd/system/multi-user.target.wants/incus-agent-setup.service; \
   rm -f /work/rootfs/etc/resolv.conf || true; \
   ln -s /run/systemd/resolve/stub-resolv.conf /work/rootfs/etc/resolv.conf
 
