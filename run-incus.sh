@@ -13,37 +13,45 @@ incus config device add node install-iso disk \
   readonly=true
 
 
-#cloud-init seed ISO
-mkdir -p incus-cloudinit
 
-cat > incus-cloudinit/user-data <<EOF
+incus config set node cloud-init.user-data - <<EOF
+#cloud-config
+hostname: test-node
+ssh_pwauth: false
+
+users:
+  - name: ubuntu
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAA......
+
+package_update: false
+package_upgrade: false
 
 runcmd:
-  - mkdir -p /etc/incus
-  - mkdir -p /var/lib/incus
-  - systemctl daemon-reload
-  - systemctl enable incus-agent.service
-  - systemctl restart incus-agent.service
+  - [ sh, -c, "echo 'cloud-init executed' > /root/ci.txt" ]
 EOF
 
-cat > incus-cloudinit/meta-data <<EOF
-instance-id: iid-node-001
-local-hostname: node
+incus config set node cloud-init.vendor-data - <<EOF
+#cloud-config
+runcmd:
+  - echo "Vendor OK" > /root/vendor.txt
 EOF
 
-cat > incus-cloudinit/network-config <<EOF
+
+incus config set node cloud-init.network-config - <<EOF
 version: 2
 ethernets:
   eth0:
     dhcp4: true
 EOF
 
+echo "===> Adding cloud-init device"
 
-genisoimage -output seed.iso -volid cidata -joliet -rock incus-cloudinit/
-rm -rvf incus-cloudinit/
+incus config device add node cloud-init disk source=cloud-init:config
 
-
-incus config device add node seed disk source=$PWD/seed.iso readonly=true
 
 incus config device add node eth0 nic network=incusbr0
 
