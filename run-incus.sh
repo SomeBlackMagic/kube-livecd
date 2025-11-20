@@ -1,11 +1,14 @@
 incus stop -f node || true
 incus rm -f node || true
 
-incus init --empty node --vm
-incus config device add node root disk path=/ pool=default
-incus config set node limits.cpu=$(nproc)
-incus config set node limits.memory=2GiB
-incus config set node security.secureboot=false
+#incus network create incusbr0 ipv4.address=10.10.10.1/24 ipv4.nat=true ipv6.address=none
+
+incus init --empty node --vm \
+  --profile default \
+  --config limits.cpu=$(nproc) \
+  --config limits.memory=2GiB \
+  --config security.secureboot=false
+
 
 incus config device add node install-iso disk \
   source=$PWD/livecd/out/node.iso \

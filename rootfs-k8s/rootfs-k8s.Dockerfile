@@ -120,7 +120,7 @@ RUN set -eux; \
   mkdir -p /work/rootfs/etc/systemd/system /work/rootfs/etc/containerd /work/rootfs/etc/cni/net.d /work/rootfs/etc/default; \
   mkdir -p /work/rootfs/etc/systemd/system/multi-user.target.wants; \
   ln -sf ../containerd.service /work/rootfs/etc/systemd/system/multi-user.target.wants/containerd.service; \
-  ln -sf ../kubelet.service     /work/rootfs/etc/systemd/system/multi-user.target.wants/kubelet.service
+  ln -sf ../kubelet-wait.path     /work/rootfs/etc/systemd/system/multi-user.target.wants/kubelet-wait.path
 
 COPY rootfs/out/rootfs.tar.gz /in/rootfs.tar.gz
 RUN tar -C /work/rootfs -xzf /in/rootfs.tar.gz
@@ -129,7 +129,7 @@ ARG IMAGE_SIZE=2G
 # Archiving
 RUN set -eux; \
   mkdir -p /out; \
-  tar -C /work/rootfs -czf /out/rootfs-k8s.tar.gz .
+  tar -vC /work/rootfs -czf /out/rootfs-k8s.tar.gz .
 RUN set -eux; \
   truncate -s "$IMAGE_SIZE" /out/rootfs.raw; \
   mke2fs -F -t ext4 -L rootfs -O ^metadata_csum,^has_journal -d /work/rootfs /out/rootfs.raw; \

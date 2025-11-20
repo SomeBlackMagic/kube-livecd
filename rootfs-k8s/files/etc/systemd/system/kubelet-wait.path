@@ -1,0 +1,9 @@
+[Unit]
+Description=Start kubelet when config.yaml appears
+
+[Path]
+PathExists=/var/lib/kubelet/config.yaml
+Unit=kubelet.service
+
+[Install]
+WantedBy=multi-user.target

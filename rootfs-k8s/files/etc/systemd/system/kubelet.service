@@ -5,10 +5,6 @@ After=containerd.service network-online.target time-sync.target
 Wants=containerd.service network-online.target time-sync.target
 
 [Service]
-# kubeadm and local overrides
-#EnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env
-#EnvironmentFile=-/etc/default/kubelet
-
 ExecStart=/usr/bin/kubelet
 Restart=always
 RestartSec=10s
