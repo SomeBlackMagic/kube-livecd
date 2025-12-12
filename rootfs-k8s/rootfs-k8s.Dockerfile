@@ -111,7 +111,6 @@ RUN set -eux; \
     chmod 0755 /work/rootfs/opt/cni/bin/* || true; \
   }
 
-
 # systemd units and configs
 COPY --chown=root:root --chmod=0644 rootfs-k8s/files/etc  /work/rootfs/etc
 
@@ -124,6 +123,20 @@ RUN set -eux; \
 
 COPY rootfs/out/rootfs.tar.gz /in/rootfs.tar.gz
 RUN tar -C /work/rootfs -xzf /in/rootfs.tar.gz
+
+# system packages (nfs, iscsi, cryptsetup, curl) with dependencies for Longhorn
+# install deb packages into /work/rootfs via dpkg (not dpkg-deb -x)
+RUN set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends --download-only --reinstall \
+    nfs-common \
+    open-iscsi \
+    cryptsetup \
+    curl; \
+  \
+  for deb in /var/cache/apt/archives/*.deb; do dpkg-deb --fsys-tarfile "$deb" | tar --keep-directory-symlink -x -C /work/rootfs; done; \
+  \
+  rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 ARG IMAGE_SIZE=2G
 # Archiving
