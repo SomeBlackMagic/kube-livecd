@@ -28,7 +28,7 @@ jobs:
 
           file: kernel/vanilla.Dockerfile
           push: false
-          outputs: type=local,dest=kernel/out
+          outputs: type=local,dest=kernel/out,src=/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -56,7 +56,7 @@ jobs:
           context: .
           file: rootfs/rootfs.Dockerfile
           push: false
-          outputs: type=local,dest=rootfs/out
+          outputs: type=local,dest=rootfs/out,src=/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -124,7 +124,7 @@ jobs:
           file: rootfs-k8s/rootfs-k8s.Dockerfile
           push: false
           build-args: ${{ steps.resolve_k8s_urls.outputs }}
-          outputs: type=local,dest=rootfs-k8s/out
+          outputs: type=local,dest=rootfs-k8s/out,src=/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -134,7 +134,7 @@ jobs:
           context: .
           file: livecd/livecd.Dockerfile
           push: false
-          outputs: type=local,dest=livecd/out
+          outputs: type=local,dest=livecd/out,src=/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
