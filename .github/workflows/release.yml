@@ -23,6 +23,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          build-args: |
+            LINUX_TARBALL_URL=${{ env.LINUX_TARBALL_URL }}
+
           file: kernel/vanilla.Dockerfile
           push: false
           outputs: type=local,dest=kernel/out
@@ -110,22 +113,22 @@ jobs:
           echo "version_short=${LATEST#v}" >> $GITHUB_OUTPUT
 
       - name: Resolve k8s URLs
+        id: resolve_k8s_urls
         run: |
-          ./.github/utils/resolve.sh ${{ steps.k8s_version.outputs.version_short }} ${{ steps.k8s_version.outputs.version }} >> $GITHUB_ENV
+          bash ./.github/utils/resolve.sh ${{ steps.k8s_version.outputs.version_short }} ${{ steps.k8s_version.outputs.version }} >> $GITHUB_ENV
 
       - name: Build rootfs k8s
-        id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: .
           file: rootfs-k8s/rootfs-k8s.Dockerfile
           push: false
+          build-args: ${{ steps.resolve_k8s_urls.outputs }}
           outputs: type=local,dest=rootfs-k8s/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Build livecd
-        id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: .
