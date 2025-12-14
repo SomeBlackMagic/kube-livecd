@@ -3,6 +3,8 @@ name: Build and Release
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
@@ -28,7 +30,7 @@ jobs:
 
           file: kernel/vanilla.Dockerfile
           push: false
-          outputs: type=local,dest=kernel/out,src=/out
+          outputs: type=local,dest=kernel/out
           cache-from: type=gha,scope=kernel
           cache-to: type=gha,mode=max,scope=kernel
 
@@ -36,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kernel-artifacts
-          path: kernel/out/
+          path: kernel/out/out/
           retention-days: 1
 
   build-rootfs:
@@ -56,7 +58,7 @@ jobs:
           context: .
           file: rootfs/rootfs.Dockerfile
           push: false
-          outputs: type=local,dest=rootfs/out,src=/out
+          outputs: type=local,dest=rootfs/out
           cache-from: type=gha,scope=rootfs
           cache-to: type=gha,mode=max,scope=rootfs
 
@@ -64,7 +66,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rootfs-artifacts
-          path: rootfs/out/
+          path: rootfs/out/out/
           retention-days: 1
 
   build-k8s:
@@ -115,7 +117,7 @@ jobs:
       - name: Resolve k8s URLs
         id: resolve_k8s_urls
         run: |
-          bash ./.github/utils/resolve.sh ${{ matrix.k8s_version }} ${{ steps.k8s_version.outputs.version_short }} >> $GITHUB_ENV
+          bash ./.github/utils/resolve.sh ${{ matrix.k8s_version }} ${{ steps.k8s_version.outputs.version }} >> $GITHUB_ENV
 
       - name: Build rootfs k8s
         uses: docker/build-push-action@v5
@@ -132,9 +134,14 @@ jobs:
             CRICTL_TGZ_URL
             NERDCTL_TGZ_URL
             CNI_PLUGINS_TGZ_URL
-          outputs: type=local,dest=rootfs-k8s/out,src=/out
+          outputs: type=local,dest=rootfs-k8s/raw
           cache-from: type=gha,scope=rootfs-k8s-${{ matrix.k8s_version }}
           cache-to: type=gha,mode=max,scope=rootfs-k8s-${{ matrix.k8s_version }}
+
+      - name: Move raw rootfs k8s to out
+        run: |
+          mkdir -p rootfs-k8s/out
+          mv --verbose rootfs-k8s/raw/out/* rootfs-k8s/out
 
       - name: Build livecd
         uses: docker/build-push-action@v5
@@ -142,11 +149,15 @@ jobs:
           context: .
           file: livecd/livecd.Dockerfile
           push: false
-          outputs: type=local,dest=livecd/out,src=/out
+          outputs: type=local,dest=livecd/raw
           cache-from: type=gha,scope=livecd-${{ matrix.k8s_version }}
           cache-to: type=gha,mode=max,scope=livecd-${{ matrix.k8s_version }}
 
-
+      - name: Move raw livecd to out
+        run: |
+          mkdir -p livecd/out
+          mv --verbose livecd/raw/out/* livecd/out
+          
 
       - name: Rename artifact
         run: |
