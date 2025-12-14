@@ -40,7 +40,6 @@ RUN --mount=type=cache,target=/var/cache/mmdebstrap \
     kmod \
     conntrack \
     iptables \
-    nftables \
     libseccomp2 \
     libip4tc2 \
     libnetfilter-conntrack3 \

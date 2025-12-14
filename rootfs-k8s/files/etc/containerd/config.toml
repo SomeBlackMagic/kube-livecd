@@ -1,11 +1,7 @@
 version = 3
 
-[plugins.'io.containerd.cri.v1.images']
-  snapshotter = "overlayfs"
+[plugins."io.containerd.grpc.v1.cri"]
   sandbox_image = "registry.k8s.io/pause:3.10"
-
-  [plugins.'io.containerd.cri.v1.images'.pinned_images]
-    sandbox = "registry.k8s.io/pause:3.10"
 
 [plugins.'io.containerd.cri.v1.runtime']
   enable_selinux = false
@@ -30,3 +26,6 @@ version = 3
 
 [plugins.'io.containerd.nri.v1.nri']
   disable = true
+
+
+

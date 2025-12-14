@@ -10,7 +10,7 @@ users:
     shell: /bin/bash
     ssh_authorized_keys:
       # Put your real key here, without any ssh options prefix
-      - ssh-ed25519 AAAAC3...... root@kali
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOwTxJ+InAd0nvE7KqlKB+yAnXJfm5Zi6IyUPOmtlAI5 root@kali
 
 # Early removal in case the image already shipped a restricted root key
 bootcmd:
@@ -29,4 +29,4 @@ write_files:
 runcmd:
   - test -f /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys
   - systemctl restart ssh || systemctl restart sshd
-  - kubeadm config images pull
+  # - kubeadm config images pull

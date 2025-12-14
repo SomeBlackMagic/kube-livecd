@@ -132,10 +132,16 @@ RUN set -eux; \
     nfs-common \
     open-iscsi \
     cryptsetup \
-    curl; \
+    curl \
+    libcurl4; \
   \
   for deb in /var/cache/apt/archives/*.deb; do dpkg-deb --fsys-tarfile "$deb" | tar --keep-directory-symlink -x -C /work/rootfs; done; \
   \
+  rm -f /work/rootfs/etc/default/rpcbind; \
+  rm -f /work/rootfs/usr/sbin/rpcbind; \
+  rm -f /work/rootfs/usr/lib/systemd/system/rpcbind.*; \
+  rm -f /work/rootfs/usr/lib/tmpfiles.d/rpcbind.conf; \
+  rm -f /work/rootfs/usr/lib/sysusers.d/rpcbind.conf; \
   rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 ARG IMAGE_SIZE=2G

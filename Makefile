@@ -3,7 +3,7 @@ K8S_VERSION ?= v1.32.1
 build: build-kernel build-rootfs build-k8s
 
 build-kernel:
-	docker build -f kernel/vanilla.Dockerfile \
+	docker build --load -f kernel/vanilla.Dockerfile \
 		--build-arg LINUX_TARBALL_URL=https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.4.tar.xz \
 		-t kernel:vanilla .
 	cid=$$(docker create kernel:vanilla) && \
@@ -11,13 +11,13 @@ build-kernel:
 	docker rm "$$cid"
 
 build-rootfs:
-	docker build -f rootfs/rootfs.Dockerfile -t rootfs:base .
+	docker build --load -f rootfs/rootfs.Dockerfile -t rootfs:base .
 	cid=$$(docker create rootfs:base) && \
 	docker cp "$$cid":/out ./rootfs/  && \
 	docker rm "$$cid"
 
 build-k8s:
-	docker build \
+	docker build --load \
 		--build-arg KUBELET_URL=https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubelet \
 		--build-arg KUBEADM_URL=https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubeadm \
 		--build-arg KUBECTL_URL=https://dl.k8s.io/release/${K8S_VERSION}/bin/linux/amd64/kubectl \
@@ -32,7 +32,7 @@ build-k8s:
 	docker cp "$$cid":/out/ ./rootfs-k8s/ && \
 	docker rm "$$cid"
 
-	docker build -f livecd/livecd.Dockerfile --tag livecd:base .
+	docker build --load -f livecd/livecd.Dockerfile --tag livecd:base .
 	cid=$$(docker create livecd:base) && \
 	docker cp "$$cid":/out/ ./livecd/ && \
 	docker rm "$$cid"

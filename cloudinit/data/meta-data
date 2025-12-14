@@ -1,3 +1,12 @@
 # NoCloud instance identity
 instance-id: iid-k8s-livecd-001
 local-hostname: k8s-live
+
+architecture: x86_64
+creation_date: 1726064200
+properties:
+  os: Linux
+  release: bookworm
+  variant: cloud
+  description: "K8s LiveCD"
+  agent: true
