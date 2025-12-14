@@ -1,0 +1,171 @@
+name: Build
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+    env:
+      LINUX_TARBALL_URL: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.4.tar.xz
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Kernel
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          build-args: |
+            LINUX_TARBALL_URL=${{ env.LINUX_TARBALL_URL }}
+
+          file: kernel/vanilla.Dockerfile
+          push: false
+          outputs: type=local,dest=kernel/out
+          cache-from: type=gha,scope=kernel
+          cache-to: type=gha,mode=max,scope=kernel
+
+      - name: Upload kernel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-artifacts
+          path: kernel/out/out/
+          retention-days: 1
+
+  build-rootfs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+
+      - name: Build rootfs
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: rootfs/rootfs.Dockerfile
+          push: false
+          outputs: type=local,dest=rootfs/out
+          cache-from: type=gha,scope=rootfs
+          cache-to: type=gha,mode=max,scope=rootfs
+
+      - name: Upload rootfs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: rootfs-artifacts
+          path: rootfs/out/out/
+          retention-days: 1
+
+  build-k8s:
+    needs:
+      - build-kernel
+      - build-rootfs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        k8s_version: [ '1.28', '1.29', '1.30', '1.31', '1.32', '1.33' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download kernel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel-artifacts
+          path: kernel/out/
+
+      - name: Download rootfs artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: rootfs-artifacts
+          path: rootfs/out/
+
+      - name: Get latest patch version for k8s ${{ matrix.k8s_version }}
+        id: k8s_version
+        run: |
+          MAJOR_MINOR="${{ matrix.k8s_version }}"
+          LATEST=$(curl -sL "https://dl.k8s.io/release/stable-${MAJOR_MINOR}.txt" || echo "")
+
+          if [ -z "$LATEST" ] || [ "$LATEST" = "<?xml"* ]; then
+            # Fallback: get all releases and filter by version
+            LATEST=$(curl -sL https://api.github.com/repos/kubernetes/kubernetes/releases | \
+              jq -r '.[].tag_name' | \
+              grep "^v${MAJOR_MINOR}\." | \
+              head -n 1)
+          fi
+
+          echo "version=${LATEST}" >> $GITHUB_OUTPUT
+          echo "version_short=${LATEST#v}" >> $GITHUB_OUTPUT
+
+      - name: Resolve k8s URLs
+        id: resolve_k8s_urls
+        run: |
+          bash ./.github/utils/resolve.sh ${{ matrix.k8s_version }} ${{ steps.k8s_version.outputs.version }} >> $GITHUB_ENV
+
+      - name: Build rootfs k8s
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: rootfs-k8s/rootfs-k8s.Dockerfile
+          push: false
+          build-args: |
+            KUBELET_URL
+            KUBEADM_URL
+            KUBECTL_URL
+            CONTAINERD_TGZ_URL
+            RUNC_URL
+            CRICTL_TGZ_URL
+            NERDCTL_TGZ_URL
+            CNI_PLUGINS_TGZ_URL
+          outputs: type=local,dest=rootfs-k8s/raw
+          cache-from: type=gha,scope=rootfs-k8s-${{ matrix.k8s_version }}
+          cache-to: type=gha,mode=max,scope=rootfs-k8s-${{ matrix.k8s_version }}
+
+      - name: Move raw rootfs k8s to out
+        run: |
+          mkdir -p rootfs-k8s/out
+          mv --verbose rootfs-k8s/raw/out/* rootfs-k8s/out
+
+      - name: Build livecd
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: livecd/livecd.Dockerfile
+          push: false
+          outputs: type=local,dest=livecd/raw
+          cache-from: type=gha,scope=livecd-${{ matrix.k8s_version }}
+          cache-to: type=gha,mode=max,scope=livecd-${{ matrix.k8s_version }}
+
+      - name: Move raw livecd to out
+        run: |
+          mkdir -p livecd/out
+          mv --verbose livecd/raw/out/* livecd/out
+
+
+      - name: Rename artifact
+        run: |
+          mv livecd/out/node.iso node-k8s-${{ steps.k8s_version.outputs.version_short }}.iso
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-k8s-${{ steps.k8s_version.outputs.version_short }}
+          path: node-k8s-${{ steps.k8s_version.outputs.version_short }}.iso
+          retention-days: 1
