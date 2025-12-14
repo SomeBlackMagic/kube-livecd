@@ -1,0 +1,20 @@
+resolver:
+  1.28:
+    KUBELET_URL: "https://dl.k8s.io/release/${K8S_FULL_VERSION}/bin/linux/amd64/kubelet"
+    KUBEADM_URL: "https://dl.k8s.io/release/${K8S_FULL_VERSION}/bin/linux/amd64/kubeadm"
+    KUBECTL_URL: "https://dl.k8s.io/release/${K8S_FULL_VERSION}/bin/linux/amd64/kubectl"
+    CONTAINERD_TGZ_URL: "https://github.com/containerd/containerd/releases/download/v2.1.4/containerd-2.1.4-linux-amd64.tar.gz"
+    RUNC_URL: "https://github.com/opencontainers/runc/releases/download/v1.3.2/runc.amd64"
+    CRICTL_TGZ_URL: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.34.0/crictl-v1.34.0-linux-amd64.tar.gz"
+    NERDCTL_TGZ_URL: "https://github.com/containerd/nerdctl/releases/download/v2.1.6/nerdctl-2.1.6-linux-amd64.tar.gz"
+    CNI_PLUGINS_TGZ_URL: "https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-amd64-v1.8.0.tgz"
+
+  1.29:
+    KUBELET_URL: "https://dl.k8s.io/release/${K8S_FULL_VERSION}/bin/linux/amd64/kubelet"
+    KUBEADM_URL: "https://dl.k8s.io/release/${K8S_FULL_VERSION}/bin/linux/amd64/kubeadm"
+    KUBECTL_URL: "https://dl.k8s.io/release/${K8S_FULL_VERSION}/bin/linux/amd64/kubectl"
+    CONTAINERD_TGZ_URL: "https://github.com/containerd/containerd/releases/download/v2.1.4/containerd-2.1.4-linux-amd64.tar.gz"
+    RUNC_URL: "https://github.com/opencontainers/runc/releases/download/v1.3.2/runc.amd64"
+    CRICTL_TGZ_URL: "https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.34.0/crictl-v1.34.0-linux-amd64.tar.gz"
+    NERDCTL_TGZ_URL: "https://github.com/containerd/nerdctl/releases/download/v2.1.6/nerdctl-2.1.6-linux-amd64.tar.gz"
+    CNI_PLUGINS_TGZ_URL: "https://github.com/containernetworking/plugins/releases/download/v1.8.0/cni-plugins-linux-amd64-v1.8.0.tgz"

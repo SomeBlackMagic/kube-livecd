@@ -9,6 +9,8 @@ on:
 jobs:
   build-kernel:
     runs-on: ubuntu-latest
+    env:
+      LINUX_TARBALL_URL: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.17.4.tar.xz
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,12 +20,12 @@ jobs:
 
       - name: Build Kernel
         id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        uses: docker/build-push-action@v5
         with:
-          outputs: type=local,dest=kernel/out
           context: .
           file: kernel/vanilla.Dockerfile
           push: false
+          outputs: type=local,dest=kernel/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -46,12 +48,12 @@ jobs:
 
       - name: Build rootfs
         id: build-and-push
-        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
+        uses: docker/build-push-action@v5
         with:
-          outputs: type=local,dest=rootfs/out
           context: .
           file: rootfs/rootfs.Dockerfile
           push: false
+          outputs: type=local,dest=rootfs/out
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -107,9 +109,32 @@ jobs:
           echo "version=${LATEST}" >> $GITHUB_OUTPUT
           echo "version_short=${LATEST#v}" >> $GITHUB_OUTPUT
 
-      - name: Build with Kubernetes ${{ steps.k8s_version.outputs.version }}
+      - name: Resolve k8s URLs
         run: |
-          make build-k8s K8S_VERSION=${{ steps.k8s_version.outputs.version }}
+          ./.github/utils/resolve.sh ${{ steps.k8s_version.outputs.version_short }} ${{ steps.k8s_version.outputs.version }} >> $GITHUB_ENV
+
+      - name: Build rootfs k8s
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: rootfs-k8s/rootfs-k8s.Dockerfile
+          push: false
+          outputs: type=local,dest=rootfs-k8s/out
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build livecd
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: livecd/livecd.Dockerfile
+          push: false
+          outputs: type=local,dest=livecd/out
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
 
 
       - name: Rename artifact
