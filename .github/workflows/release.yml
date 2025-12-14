@@ -22,7 +22,7 @@ jobs:
         with:
           outputs:
             type: local
-            dest: ./kernel/out
+            dest: kernel/out
           context: .
           file: kernel/vanilla.Dockerfile
           push: false
@@ -52,7 +52,7 @@ jobs:
         with:
           outputs:
             type: local
-            dest: ./rootfs/out
+            dest: rootfs/out
           context: .
           file: rootfs/rootfs.Dockerfile
           push: false
