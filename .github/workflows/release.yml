@@ -20,9 +20,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          outputs:
-            type: local
-            dest: kernel/out
+          outputs: type=local,dest=kernel/out
           context: .
           file: kernel/vanilla.Dockerfile
           push: false
@@ -50,9 +48,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
-          outputs:
-            type: local
-            dest: rootfs/out
+          outputs: type=local,dest=rootfs/out
           context: .
           file: rootfs/rootfs.Dockerfile
           push: false
