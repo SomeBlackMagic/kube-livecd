@@ -115,7 +115,7 @@ jobs:
       - name: Resolve k8s URLs
         id: resolve_k8s_urls
         run: |
-          bash ./.github/utils/resolve.sh ${{ steps.k8s_version.outputs.version_short }} ${{ steps.k8s_version.outputs.version }} >> $GITHUB_ENV
+          bash ./.github/utils/resolve.sh ${{ matrix.k8s_version }} ${{ steps.k8s_version.outputs.version_short }} >> $GITHUB_ENV
 
       - name: Build rootfs k8s
         uses: docker/build-push-action@v5
